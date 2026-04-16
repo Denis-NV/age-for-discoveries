@@ -1,5 +1,8 @@
 node_modules/
 dist/
+inbox/
+processed/
+captions/
 
 # Environment — credentials live in root .env, never commit it
 .env
