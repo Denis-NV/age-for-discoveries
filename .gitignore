@@ -1,0 +1,16 @@
+node_modules/
+dist/
+
+# Environment — credentials live in root .env, never commit it
+.env
+.env.local
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
