@@ -68,7 +68,7 @@ function captionPathForMedia(mediaPath: string): string {
 }
 
 function buildCaption(english: string, russian: string, hashtags: string): string {
-  return `${english}\n\n• • •\n\n${russian}\n\n${hashtags}`;
+  return `🇬🇧 ${english}\n\n• • •\n\n🇷🇺 ${russian}\n\n${hashtags}`;
 }
 
 function parseSchedule(value: string): number {
@@ -140,9 +140,6 @@ async function postSingleImage(
     }
     throw err;
   }
-
-  await moveToProcessed(mediaPath);
-  console.log(`\n  ✓ Moved ${path.basename(mediaPath)} → /processed\n`);
 }
 
 // ---------------------------------------------------------------------------
@@ -214,11 +211,6 @@ async function postCarousel(
     }
     throw err;
   }
-
-  for (const mp of mediaPaths) {
-    await moveToProcessed(mp);
-  }
-  console.log(`\n  ✓ Moved ${mediaPaths.length} files → /processed\n`);
 }
 
 // ---------------------------------------------------------------------------
@@ -226,7 +218,7 @@ async function postCarousel(
 // ---------------------------------------------------------------------------
 
 async function main(): Promise<void> {
-  const args = process.argv.slice(2);
+  const args = process.argv.slice(2).filter(a => a !== '--');
 
   if (args.length === 0) {
     console.log('\n  Usage:');

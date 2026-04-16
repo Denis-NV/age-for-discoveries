@@ -132,8 +132,26 @@ Save processed files to `/processed` before moving to caption writing.
    Example: `IMG_4521_instagram.txt` — for carousels, name after the lead image
 
 ### Step 4 — Publishing
-Claude runs `pnpm run publish` (in `/tools`) on Denis's behalf. Denis only needs to
-confirm the schedule or say "post it now."
+Before running any publish command, Claude must present a final summary showing:
+- The processed image(s) that will be posted
+- The full caption (English + Russian + hashtags)
+- The proposed posting time
+
+Claude only runs `pnpm run publish` after Denis explicitly confirms with something
+like "yes, post it" or "schedule it for Tuesday at noon." Nothing is ever published
+without that explicit instruction. Denis can stop or change anything up to that point.
+
+### Step 5 — Session cleanup
+At the end of a session, once Denis confirms all posts have published or scheduled
+successfully, he will say something like "clean up" or "we're done." At that point
+Claude should:
+
+1. Request file deletion permission using the `allow_cowork_file_delete` tool
+2. Run `./tools/node_modules/.bin/ts-node tools/src/cleanup.ts` from the project root
+   (this deletes all media files from `/inbox` and `/processed`, leaving captions intact)
+
+Do not clean up mid-session — Denis may be processing photos from multiple locations
+in the same session and needs all files present until every post is confirmed.
 
 ## Instagram API capabilities and limitations
 

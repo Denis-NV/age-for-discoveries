@@ -5,7 +5,8 @@
   "private": true,
   "scripts": {
     "triage": "ts-node src/triage.ts",
-    "publish": "ts-node src/post.ts"
+    "publish": "ts-node src/post.ts",
+    "cleanup": "ts-node src/cleanup.ts"
   },
   "dependencies": {
     "axios": "^1.7.2",

@@ -103,6 +103,8 @@ export async function extractMeta(filePath: string): Promise<MediaMeta> {
 export async function moveToProcessed(filePath: string): Promise<string> {
   await fs.ensureDir(PATHS.processed);
   const dest = path.join(PATHS.processed, path.basename(filePath));
+  const src  = path.resolve(filePath);
+  if (src === path.resolve(dest)) return dest;   // already in /processed
   await fs.move(filePath, dest, { overwrite: false });
   return dest;
 }
@@ -124,7 +126,7 @@ export async function parseCaptionFile(captionPath: string): Promise<CaptionFile
   const raw = await fs.readFile(captionPath, 'utf-8');
 
   const extract = (label: string): string => {
-    const regex = new RegExp(`${label}:\\s*\\n([\\s\\S]*?)(?=\\n[A-Z ]+:|$)`, 'i');
+    const regex = new RegExp(`${label}:\\s*\\n([\\s\\S]*?)(?=\\n[A-Z ()]+:|$)`, 'i');
     const match = raw.match(regex);
     return match ? match[1].trim() : '';
   };
