@@ -62,8 +62,19 @@ if (!TOKEN || !IG_USER) {
 // Helpers
 // ---------------------------------------------------------------------------
 
-function captionPathForMedia(mediaPath: string): string {
-  const base = path.basename(mediaPath, path.extname(mediaPath));
+async function captionPathForMedia(mediaPath: string): Promise<string> {
+  // Strip .jpg extension and any _feed/_story processing suffix to recover
+  // the original base name (e.g. "PXL_20260406_152316459_feed.jpg" → "PXL_20260406_152316459")
+  const withoutExt = path.basename(mediaPath, path.extname(mediaPath));
+  const base = withoutExt.replace(/_(feed|story)$/, '');
+
+  // Scan captions folder for a file that starts with this base — handles
+  // original filenames like "PXL_20260406_152316459.MP" transparently
+  const files = await fs.readdir(PATHS.captions);
+  const match = files.find(f => f.startsWith(base) && f.endsWith('_instagram.txt'));
+  if (match) return path.join(PATHS.captions, match);
+
+  // Fallback: exact name (covers files that had no processing suffix)
   return path.join(PATHS.captions, `${base}_instagram.txt`);
 }
 
@@ -93,7 +104,7 @@ async function postSingleImage(
   mediaPath: string,
   scheduledTs?: number,
 ): Promise<void> {
-  const captionPath = captionPathForMedia(mediaPath);
+  const captionPath = await captionPathForMedia(mediaPath);
 
   if (!await fs.pathExists(captionPath)) {
     throw new Error(`Caption file not found: ${captionPath}`);
@@ -111,8 +122,9 @@ async function postSingleImage(
 
     console.log(`\n  [2/4] Creating Instagram media container…`);
     const containerId = await createImageContainer(IG_USER, TOKEN, {
-      imageUrl: upload.publicUrl,
-      caption:  fullCaption,
+      imageUrl:             upload.publicUrl,
+      caption:              fullCaption,
+      scheduledPublishTime: scheduledTs,
     });
 
     console.log(`\n  [3/4] Waiting for container ${containerId}…`);
@@ -154,7 +166,7 @@ async function postCarousel(
     throw new Error('Carousels require 2–10 images.');
   }
 
-  const captionPath = captionPathForMedia(mediaPaths[0]);
+  const captionPath = await captionPathForMedia(mediaPaths[0]);
   if (!await fs.pathExists(captionPath)) {
     throw new Error(`Caption file not found: ${captionPath}`);
   }
@@ -183,8 +195,9 @@ async function postCarousel(
 
     console.log(`\n        Creating carousel container…`);
     const carouselId = await createCarouselContainer(IG_USER, TOKEN, {
-      itemContainerIds: itemIds,
-      caption: fullCaption,
+      itemContainerIds:     itemIds,
+      caption:              fullCaption,
+      scheduledPublishTime: scheduledTs,
     });
 
     console.log(`\n  [3/4] Waiting for carousel ${carouselId}…`);

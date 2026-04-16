@@ -16,8 +16,9 @@ const BASE_URL = 'https://graph.facebook.com/v20.0';
 // ---------------------------------------------------------------------------
 
 export interface SingleImageParams {
-  imageUrl:  string;
-  caption:   string;
+  imageUrl:             string;
+  caption:              string;
+  scheduledPublishTime?: number;  // Unix timestamp; omit for immediate publish
 }
 
 export interface CarouselItemParams {
@@ -25,8 +26,9 @@ export interface CarouselItemParams {
 }
 
 export interface CarouselParams {
-  itemContainerIds: string[];
-  caption:          string;
+  itemContainerIds:     string[];
+  caption:              string;
+  scheduledPublishTime?: number;  // Unix timestamp; omit for immediate publish
 }
 
 export type ContainerStatus = 'FINISHED' | 'IN_PROGRESS' | 'PUBLISHED' | 'ERROR' | 'EXPIRED';
@@ -49,11 +51,16 @@ export async function createImageContainer(
   token: string,
   params: SingleImageParams,
 ): Promise<string> {
-  const res = await axios.post(endpoint(igUserId, '/media'), {
+  const body: Record<string, unknown> = {
     image_url:    params.imageUrl,
     caption:      params.caption,
     access_token: token,
-  });
+  };
+  if (params.scheduledPublishTime) {
+    body.published              = false;
+    body.scheduled_publish_time = params.scheduledPublishTime;
+  }
+  const res = await axios.post(endpoint(igUserId, '/media'), body);
   return res.data.id as string;
 }
 
@@ -77,12 +84,17 @@ export async function createCarouselContainer(
   token: string,
   params: CarouselParams,
 ): Promise<string> {
-  const res = await axios.post(endpoint(igUserId, '/media'), {
+  const body: Record<string, unknown> = {
     media_type:   'CAROUSEL',
     children:     params.itemContainerIds.join(','),
     caption:      params.caption,
     access_token: token,
-  });
+  };
+  if (params.scheduledPublishTime) {
+    body.published              = false;
+    body.scheduled_publish_time = params.scheduledPublishTime;
+  }
+  const res = await axios.post(endpoint(igUserId, '/media'), body);
   return res.data.id as string;
 }
 
@@ -141,21 +153,8 @@ export async function publishContainer(
 }
 
 /**
- * Schedule a finished container to be published at a specific time.
- * scheduledTs is a Unix timestamp (seconds). Must be 10 min – 75 days from now.
- * Returns the media ID.
+ * Alias for publishContainer — scheduling is configured at container creation time
+ * (via scheduledPublishTime in createImageContainer / createCarouselContainer),
+ * so the publish call is identical whether the post is immediate or scheduled.
  */
-export async function scheduleContainer(
-  igUserId: string,
-  token: string,
-  containerId: string,
-  scheduledTs: number,
-): Promise<string> {
-  const res = await axios.post(endpoint(igUserId, '/media_publish'), {
-    creation_id:            containerId,
-    published:              false,
-    scheduled_publish_time: scheduledTs,
-    access_token:           token,
-  });
-  return res.data.id as string;
-}
+export const scheduleContainer = publishContainer;
