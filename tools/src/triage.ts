@@ -26,7 +26,7 @@ function formatDate(d?: Date): string {
 }
 
 function formatGps(lat?: number, lon?: number): string {
-  if (lat == null || lon == null) return 'no GPS data';
+  if (lat == null || lon == null || isNaN(lat) || isNaN(lon)) return 'no GPS data';
   const latStr = `${Math.abs(lat).toFixed(5)}° ${lat >= 0 ? 'N' : 'S'}`;
   const lonStr = `${Math.abs(lon).toFixed(5)}° ${lon >= 0 ? 'E' : 'W'}`;
   return `${latStr}, ${lonStr}`;

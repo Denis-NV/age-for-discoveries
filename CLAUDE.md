@@ -79,6 +79,20 @@ Before processing any content, consider which format serves it best:
 Denis drops raw files into `/inbox` and Claude handles everything from there.
 Denis should never need to open an editing app, the Instagram app, or run scripts manually.
 
+### Step 0 — Getting photos into /inbox
+
+**Primary method — Google Photos batch download (recommended):**
+Select photos in Google Photos on desktop, download as zip (Shift+D or Download button),
+unzip, and drop the files directly into `/inbox`. This fully preserves EXIF including GPS
+coordinates, date, and camera metadata.
+
+**Backup method — Cloudinary mobile uploader:**
+Open `https://denis-nv.github.io/age-for-discoveries/uploader/` on the phone and upload
+photos directly. Then run `pnpm run sync` in `/tools` to pull them into `/inbox`.
+Note: Android strips GPS from photos shared with browser apps (OS-level privacy restriction),
+so GPS coordinates will be absent for phone-uploaded files. Date and camera metadata are
+preserved. This method is useful when away from a computer and a post needs to go out quickly.
+
 ### Step 1 — Triage (always do this first)
 When new photos or videos appear in `/inbox`, do NOT immediately write captions or process files.
 First, review all the new files together and present a triage report:

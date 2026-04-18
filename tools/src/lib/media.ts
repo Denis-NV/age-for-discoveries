@@ -80,13 +80,18 @@ export async function extractMeta(filePath: string): Promise<MediaMeta> {
   if (isImage(filePath)) {
     try {
       const exif = await exifr.parse(filePath, {
-        pick: ['DateTimeOriginal', 'Make', 'Model', 'latitude', 'longitude'],
+        gps:             true,
+        tiff:            true,
+        exif:            true,
+        translateKeys:   true,
+        translateValues: true,
+        reviveValues:    true,
       });
       if (exif) {
         if (exif.DateTimeOriginal) meta.dateTaken = exif.DateTimeOriginal;
         if (exif.Make || exif.Model) meta.camera = [exif.Make, exif.Model].filter(Boolean).join(' ');
-        if (exif.latitude)  meta.latitude  = exif.latitude;
-        if (exif.longitude) meta.longitude = exif.longitude;
+        if (exif.latitude  != null && !isNaN(exif.latitude))  meta.latitude  = exif.latitude;
+        if (exif.longitude != null && !isNaN(exif.longitude)) meta.longitude = exif.longitude;
       }
     } catch {
       // EXIF not available — not fatal

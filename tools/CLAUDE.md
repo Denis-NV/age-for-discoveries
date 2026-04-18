@@ -39,7 +39,8 @@ tools/
 pnpm install
 
 # Sync: download new photos/videos from Cloudinary afd-inbox to /inbox
-# Run this at the start of a session after uploading from the phone uploader
+# Only needed when photos were uploaded via the mobile uploader (backup method).
+# Primary method is Google Photos batch download → unzip → drop into /inbox directly.
 pnpm run sync
 
 # Triage: scan /inbox and print a metadata report (read-only, safe to run anytime)
@@ -110,9 +111,14 @@ Required variables for these scripts:
 Downloads new photos and videos from the Cloudinary `afd-inbox` folder to the
 local `/inbox` directory. Tracks already-downloaded files in `.sync-state.json`
 so repeat runs are safe and only fetch what's new. Sorts downloads oldest-first
-so `/inbox` files arrive in chronological order. Uses Cloudinary's private download URL (signed, expires in 5 min) to fetch the
-original stored file, bypassing CDN transformation and preserving full EXIF/GPS. Run this at
-the start of every session after uploading from the phone uploader.
+so `/inbox` files arrive in chronological order.
+
+This is the **backup inbox method** — only run when photos were uploaded via the
+mobile uploader at `https://denis-nv.github.io/age-for-discoveries/uploader/`.
+The primary method is Google Photos batch download (Shift+D or Download as zip →
+unzip → drop into `/inbox`), which fully preserves GPS coordinates. Android strips
+GPS from photos shared with browser apps (OS-level restriction), so phone-uploaded
+files will arrive with date and camera metadata intact but without GPS.
 
 ### `triage.ts`
 Scans `/inbox` for new photos and videos. For each file it extracts:
