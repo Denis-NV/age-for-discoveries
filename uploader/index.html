@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <title>Age for Discoveries — Upload</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #0f0f0f;
+      color: #f0f0f0;
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem 1.5rem;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 2.5rem;
+    }
+
+    header h1 {
+      font-size: 1.3rem;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      color: #fff;
+    }
+
+    header p {
+      margin-top: 0.4rem;
+      font-size: 0.85rem;
+      color: #888;
+    }
+
+    .drop-zone {
+      width: 100%;
+      max-width: 420px;
+      border: 2px dashed #333;
+      border-radius: 1.25rem;
+      padding: 2.5rem 1.5rem;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+      background: #1a1a1a;
+    }
+
+    .drop-zone:hover, .drop-zone.dragover {
+      border-color: #888;
+      background: #222;
+    }
+
+    .drop-zone input[type="file"] {
+      display: none;
+    }
+
+    .drop-zone .icon {
+      font-size: 2.5rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .drop-zone p {
+      font-size: 0.95rem;
+      color: #aaa;
+      line-height: 1.5;
+    }
+
+    .drop-zone p strong {
+      color: #fff;
+      display: block;
+      font-size: 1.05rem;
+      margin-bottom: 0.25rem;
+    }
+
+    .file-list {
+      width: 100%;
+      max-width: 420px;
+      margin-top: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+    }
+
+    .file-item {
+      background: #1a1a1a;
+      border-radius: 0.75rem;
+      padding: 0.75rem 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-size: 0.85rem;
+    }
+
+    .file-item .name {
+      flex: 1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      color: #ddd;
+    }
+
+    .file-item .status {
+      font-size: 0.8rem;
+      font-weight: 500;
+      white-space: nowrap;
+    }
+
+    .status-pending  { color: #888; }
+    .status-uploading { color: #f0a500; }
+    .status-done     { color: #4caf50; }
+    .status-error    { color: #f44336; }
+
+    .progress-bar-wrap {
+      width: 100%;
+      height: 3px;
+      background: #333;
+      border-radius: 2px;
+      overflow: hidden;
+      margin-top: 0.4rem;
+    }
+
+    .progress-bar {
+      height: 100%;
+      background: #f0a500;
+      border-radius: 2px;
+      transition: width 0.2s;
+      width: 0%;
+    }
+
+    .progress-bar.done { background: #4caf50; }
+
+    .upload-btn {
+      margin-top: 1.5rem;
+      width: 100%;
+      max-width: 420px;
+      padding: 1rem;
+      background: #fff;
+      color: #000;
+      font-size: 1rem;
+      font-weight: 600;
+      border: none;
+      border-radius: 0.85rem;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+    }
+
+    .upload-btn:hover  { background: #e8e8e8; }
+    .upload-btn:active { transform: scale(0.98); }
+    .upload-btn:disabled { background: #333; color: #666; cursor: not-allowed; }
+
+    .summary {
+      margin-top: 1.25rem;
+      font-size: 0.85rem;
+      color: #888;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>📷 Age for Discoveries</h1>
+    <p>Upload photos to the Instagram queue</p>
+  </header>
+
+  <div class="drop-zone" id="dropZone">
+    <input type="file" id="fileInput" accept="image/*,video/*" multiple />
+    <div class="icon">＋</div>
+    <p>
+      <strong>Tap to select photos</strong>
+      or drag and drop here
+    </p>
+  </div>
+
+  <div class="file-list" id="fileList"></div>
+
+  <button class="upload-btn" id="uploadBtn" disabled>Upload</button>
+
+  <p class="summary" id="summary"></p>
+
+  <script>
+    // -------------------------------------------------------------------------
+    // Config — cloud name and upload preset only (no API secret exposed)
+    // -------------------------------------------------------------------------
+    const CLOUD_NAME   = 'dw9zyzw0g';
+    const UPLOAD_PRESET = 'afd_inbox';   // unsigned preset — create in Cloudinary dashboard
+    const UPLOAD_FOLDER = 'afd-inbox';   // folder inside your Cloudinary account
+
+    // -------------------------------------------------------------------------
+    // State
+    // -------------------------------------------------------------------------
+    let files = [];
+
+    const dropZone  = document.getElementById('dropZone');
+    const fileInput = document.getElementById('fileInput');
+    const fileList  = document.getElementById('fileList');
+    const uploadBtn = document.getElementById('uploadBtn');
+    const summary   = document.getElementById('summary');
+
+    // -------------------------------------------------------------------------
+    // File selection
+    // -------------------------------------------------------------------------
+    dropZone.addEventListener('click', () => fileInput.click());
+    fileInput.addEventListener('change', () => addFiles(Array.from(fileInput.files)));
+
+    dropZone.addEventListener('dragover',  e => { e.preventDefault(); dropZone.classList.add('dragover'); });
+    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+    dropZone.addEventListener('drop', e => {
+      e.preventDefault();
+      dropZone.classList.remove('dragover');
+      addFiles(Array.from(e.dataTransfer.files));
+    });
+
+    function addFiles(newFiles) {
+      const mediaFiles = newFiles.filter(f => f.type.startsWith('image/') || f.type.startsWith('video/'));
+      files = [...files, ...mediaFiles.map(f => ({ file: f, status: 'pending', progress: 0 }))];
+      render();
+    }
+
+    // -------------------------------------------------------------------------
+    // Render file list
+    // -------------------------------------------------------------------------
+    function render() {
+      uploadBtn.disabled = files.length === 0 || files.every(f => f.status === 'done');
+
+      fileList.innerHTML = files.map((item, i) => `
+        <div class="file-item">
+          <span class="name">${item.file.name}</span>
+          <span class="status status-${item.status}">
+            ${item.status === 'pending'   ? 'Ready'
+            : item.status === 'uploading' ? `${item.progress}%`
+            : item.status === 'done'      ? '✓ Done'
+            :                               '✗ Error'}
+          </span>
+        </div>
+        ${item.status === 'uploading' ? `
+          <div class="progress-bar-wrap">
+            <div class="progress-bar ${item.progress >= 100 ? 'done' : ''}" style="width:${item.progress}%"></div>
+          </div>` : ''}
+      `).join('');
+
+      const done  = files.filter(f => f.status === 'done').length;
+      const error = files.filter(f => f.status === 'error').length;
+      if (done > 0 || error > 0) {
+        summary.textContent = `${done} uploaded${error > 0 ? `, ${error} failed` : ''} — ready for triage`;
+      }
+    }
+
+    // -------------------------------------------------------------------------
+    // Upload
+    // -------------------------------------------------------------------------
+    uploadBtn.addEventListener('click', uploadAll);
+
+    async function uploadAll() {
+      uploadBtn.disabled = true;
+      const pending = files.filter(f => f.status === 'pending' || f.status === 'error');
+
+      for (const item of pending) {
+        await uploadOne(item);
+      }
+    }
+
+    function uploadOne(item) {
+      return new Promise(resolve => {
+        item.status = 'uploading';
+        item.progress = 0;
+        render();
+
+        const formData = new FormData();
+        formData.append('file', item.file);
+        formData.append('upload_preset', UPLOAD_PRESET);
+        formData.append('folder', UPLOAD_FOLDER);
+
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/auto/upload`);
+
+        xhr.upload.addEventListener('progress', e => {
+          if (e.lengthComputable) {
+            item.progress = Math.round((e.loaded / e.total) * 100);
+            render();
+          }
+        });
+
+        xhr.addEventListener('load', () => {
+          if (xhr.status === 200) {
+            item.status = 'done';
+            item.progress = 100;
+          } else {
+            item.status = 'error';
+            console.error('Upload failed:', xhr.responseText);
+          }
+          render();
+          resolve();
+        });
+
+        xhr.addEventListener('error', () => {
+          item.status = 'error';
+          render();
+          resolve();
+        });
+
+        xhr.send(formData);
+      });
+    }
+  </script>
+
+</body>
+</html>
