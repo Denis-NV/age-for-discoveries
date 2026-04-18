@@ -277,7 +277,7 @@
         formData.append('folder', UPLOAD_FOLDER);
 
         const xhr = new XMLHttpRequest();
-        xhr.open('POST', `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/auto/upload`);
+        xhr.open('POST', `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/raw/upload`);
 
         xhr.upload.addEventListener('progress', e => {
           if (e.lengthComputable) {

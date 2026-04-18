@@ -4,6 +4,7 @@
   "description": "Automation scripts for the @age_for_discoveries Instagram workflow",
   "private": true,
   "scripts": {
+    "sync": "ts-node src/sync.ts",
     "triage": "ts-node src/triage.ts",
     "publish": "ts-node src/post.ts",
     "cleanup": "ts-node src/cleanup.ts"

@@ -17,6 +17,7 @@ API credentials are documented there. Do not duplicate them here.
 ```
 tools/
 ├── src/
+│   ├── sync.ts         # Downloads new files from Cloudinary afd-inbox folder to /inbox
 │   ├── triage.ts       # Reads /inbox, extracts metadata, prints a triage report
 │   ├── process.ts      # Crops, adjusts, and exports images/video ready for posting  [TODO]
 │   ├── post.ts         # Uploads to Cloudinary, then publishes/schedules on Instagram
@@ -24,6 +25,7 @@ tools/
 │       ├── meta.ts     # Thin wrapper around Meta Graph API calls
 │       ├── media.ts    # Shared helpers: EXIF extraction, file moves, path utils
 │       └── cloudinary.ts  # Cloudinary image upload/delete helpers
+├── .sync-state.json    # Tracks which Cloudinary files have been downloaded (auto-generated)
 ├── CLAUDE.md           # This file
 ├── package.json
 ├── tsconfig.json
@@ -35,6 +37,10 @@ tools/
 ```bash
 # Install dependencies (first time or after pulling changes)
 pnpm install
+
+# Sync: download new photos/videos from Cloudinary afd-inbox to /inbox
+# Run this at the start of a session after uploading from the phone uploader
+pnpm run sync
 
 # Triage: scan /inbox and print a metadata report (read-only, safe to run anytime)
 pnpm run triage
@@ -56,10 +62,10 @@ pnpm run publish -- processed/IMG_4521.jpg --schedule "2026-04-18 12:00"
 
 ## Claude (Cowork) can run these scripts
 
-Denis has authorised Claude to run `pnpm run triage` and `pnpm run publish`
-on his behalf during a Cowork session. When Denis says "post this" or "publish
-this with a schedule of X", Claude should run the appropriate command rather
-than asking Denis to do it manually.
+Denis has authorised Claude to run `pnpm run sync`, `pnpm run triage`, and
+`pnpm run publish` on his behalf during a Cowork session. When Denis says
+"post this" or "publish this with a schedule of X", Claude should run the
+appropriate command rather than asking Denis to do it manually.
 
 ## Environment variables
 
@@ -99,6 +105,14 @@ Required variables for these scripts:
 | `@types/fs-extra` | Types for fs-extra |
 
 ## Script responsibilities
+
+### `sync.ts`
+Downloads new photos and videos from the Cloudinary `afd-inbox` folder to the
+local `/inbox` directory. Tracks already-downloaded files in `.sync-state.json`
+so repeat runs are safe and only fetch what's new. Sorts downloads oldest-first
+so `/inbox` files arrive in chronological order. Uses Cloudinary's private download URL (signed, expires in 5 min) to fetch the
+original stored file, bypassing CDN transformation and preserving full EXIF/GPS. Run this at
+the start of every session after uploading from the phone uploader.
 
 ### `triage.ts`
 Scans `/inbox` for new photos and videos. For each file it extracts:

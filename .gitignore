@@ -3,6 +3,9 @@ dist/
 inbox/
 processed/
 
+# Sync state — local only, tracks which Cloudinary files have been downloaded
+tools/.sync-state.json
+
 # Environment — credentials live in root .env, never commit it
 .env
 .env.local
