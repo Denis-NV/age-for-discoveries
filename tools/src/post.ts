@@ -50,8 +50,9 @@ import { uploadImage, deleteImage, UploadResult } from './lib/cloudinary';
 // Config from environment
 // ---------------------------------------------------------------------------
 
-const TOKEN   = process.env.INSTAGRAM_ACCESS_TOKEN ?? '';
-const IG_USER = process.env.INSTAGRAM_USER_ID      ?? '';
+const TOKEN       = process.env.INSTAGRAM_ACCESS_TOKEN ?? '';
+const IG_USER     = process.env.INSTAGRAM_USER_ID      ?? '';
+const PROJECT_ROOT = path.resolve(__dirname, '../../');
 
 if (!TOKEN || !IG_USER) {
   console.error('\n  Error: INSTAGRAM_ACCESS_TOKEN and INSTAGRAM_USER_ID must be set in .env\n');
@@ -103,8 +104,9 @@ function parseSchedule(value: string): number {
 async function postSingleImage(
   mediaPath: string,
   scheduledTs?: number,
+  explicitCaptionPath?: string,
 ): Promise<void> {
-  const captionPath = await captionPathForMedia(mediaPath);
+  const captionPath = explicitCaptionPath ?? await captionPathForMedia(mediaPath);
 
   if (!await fs.pathExists(captionPath)) {
     throw new Error(`Caption file not found: ${captionPath}`);
@@ -133,7 +135,7 @@ async function postSingleImage(
     console.log(`\n  [4/4] ${scheduledTs ? 'Scheduling' : 'Publishing'}…`);
     let mediaId: string;
     if (scheduledTs) {
-      mediaId = await scheduleContainer(IG_USER, TOKEN, containerId, scheduledTs);
+      mediaId = await scheduleContainer(IG_USER, TOKEN, containerId);
       const schedDate = new Date(scheduledTs * 1000).toLocaleString();
       console.log(`\n  ✓ Scheduled for ${schedDate}`);
     } else {
@@ -144,7 +146,11 @@ async function postSingleImage(
     console.log(`    Pillar       : ${caption.pillar}`);
     console.log(`    Story idea   : ${caption.storyIdea}`);
 
-  } catch (err) {
+  } catch (err: any) {
+    // Log the actual Meta API error response if available
+    if (err?.response?.data) {
+      console.error('\n  Meta API error:', JSON.stringify(err.response.data, null, 2));
+    }
     // Clean up Cloudinary upload on failure so we don't leave orphans
     if (upload) {
       console.log(`\n  Cleaning up Cloudinary upload…`);
@@ -161,12 +167,13 @@ async function postSingleImage(
 async function postCarousel(
   mediaPaths: string[],
   scheduledTs?: number,
+  explicitCaptionPath?: string,
 ): Promise<void> {
   if (mediaPaths.length < 2 || mediaPaths.length > 10) {
     throw new Error('Carousels require 2–10 images.');
   }
 
-  const captionPath = await captionPathForMedia(mediaPaths[0]);
+  const captionPath = explicitCaptionPath ?? await captionPathForMedia(mediaPaths[0]);
   if (!await fs.pathExists(captionPath)) {
     throw new Error(`Caption file not found: ${captionPath}`);
   }
@@ -206,7 +213,7 @@ async function postCarousel(
     console.log(`\n  [4/4] ${scheduledTs ? 'Scheduling' : 'Publishing'}…`);
     let mediaId: string;
     if (scheduledTs) {
-      mediaId = await scheduleContainer(IG_USER, TOKEN, carouselId, scheduledTs);
+      mediaId = await scheduleContainer(IG_USER, TOKEN, carouselId);
       const schedDate = new Date(scheduledTs * 1000).toLocaleString();
       console.log(`\n  ✓ Carousel scheduled for ${schedDate}`);
     } else {
@@ -217,7 +224,10 @@ async function postCarousel(
     console.log(`    Pillar       : ${caption.pillar}`);
     console.log(`    Story idea   : ${caption.storyIdea}`);
 
-  } catch (err) {
+  } catch (err: any) {
+    if (err?.response?.data) {
+      console.error('\n  Meta API error:', JSON.stringify(err.response.data, null, 2));
+    }
     if (uploads.length > 0) {
       console.log(`\n  Cleaning up ${uploads.length} Cloudinary upload(s)…`);
       await Promise.all(uploads.map(u => deleteImage(u.publicId).catch(() => {})));
@@ -242,6 +252,7 @@ async function main(): Promise<void> {
   // Split args into file paths and flags
   const filePaths: string[] = [];
   let scheduledTs: number | undefined;
+  let captionArg:  string | undefined;
 
   for (let i = 0; i < args.length; i++) {
     if (args[i] === '--schedule') {
@@ -250,6 +261,14 @@ async function main(): Promise<void> {
         process.exit(1);
       }
       scheduledTs = parseSchedule(args[++i]);
+    } else if (args[i] === '--caption') {
+      if (!args[i + 1]) {
+        console.error('  Error: --caption requires a path, e.g. --caption captions/my_post_instagram.txt\n');
+        process.exit(1);
+      }
+      captionArg = path.isAbsolute(args[i + 1])
+        ? args[++i]
+        : path.resolve(PROJECT_ROOT, args[++i]);
     } else {
       filePaths.push(args[i]);
     }
@@ -260,7 +279,13 @@ async function main(): Promise<void> {
     process.exit(1);
   }
 
-  for (const p of filePaths) {
+  // Resolve relative paths against the project root so commands work
+  // regardless of whether they're run from tools/ or the project root.
+  const resolvedPaths = filePaths.map(p =>
+    path.isAbsolute(p) ? p : path.resolve(PROJECT_ROOT, p)
+  );
+
+  for (const p of resolvedPaths) {
     if (!isImage(p)) {
       console.error(`  Error: ${p} is not a supported image type\n`);
       process.exit(1);
@@ -281,10 +306,10 @@ async function main(): Promise<void> {
     console.log('  Mode: publish immediately');
   }
 
-  if (filePaths.length === 1) {
-    await postSingleImage(filePaths[0], scheduledTs);
+  if (resolvedPaths.length === 1) {
+    await postSingleImage(resolvedPaths[0], scheduledTs, captionArg);
   } else {
-    await postCarousel(filePaths, scheduledTs);
+    await postCarousel(resolvedPaths, scheduledTs, captionArg);
   }
 }
 

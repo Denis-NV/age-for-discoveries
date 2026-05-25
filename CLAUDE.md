@@ -1,12 +1,14 @@
 # Age for Discoveries — Instagram Content Manager
 
 ## Who I am
-This project belongs to Denis and his wife Alexandra, who together run the Instagram travel account
-@age_for_discoveries (displayed as "The Nemytovs"). Alexandra is a co-author and photographer —
-she sometimes posts content independently or as a collaborator. Denis is the primary voice and
-history-driven traveller; Alexandra contributes photography and her own perspective.
-Denis explores Europe mostly by Land Rover Discovery 3, converted into a camper van with a
-sleeping platform, full kitchen, fridge, and dual battery setup.
+This account belongs to Denis. It is primarily his personal project — a reflection of his interest
+in history, travel, and the experience of visiting the places where history happened.
+Alexandra (his wife) has access and occasionally posts, but she is not an active co-author.
+Denis is the primary voice, face, and personality of the account.
+
+The account username is @agefordiscoveries (no underscores), display name "Age for Discoveries".
+Denis travels by various means — Land Rover Discovery 3 (converted camper van), motorcycle,
+train, and others. No single mode of transport defines the account.
 
 ## The three pillars of this account
 
@@ -24,6 +26,15 @@ vehicle maintenance and accessories. Posts should feel hands-on and authentic, n
 - Curious, warm, knowledgeable but never academic or dry
 - First-person — Denis was there, Denis discovered this
 - Sense of genuine discovery and adventure
+- **Personal edge is essential.** People follow personalities, not just pretty images.
+  Denis's face, thoughts, and reactions should appear regularly — not just the places.
+  The account should feel like you're hearing from a specific person, not a travel magazine.
+- **Not dogmatic, not preachy.** Denis shares his experience and what he felt or understood
+  standing in a place — he does not lecture. The tone is "this is what I found" not
+  "here is what you should know." History is made vivid through personal encounter, not authority.
+- Food and local produce are treated as living history — part of the same curiosity, not a
+  separate lifestyle segment. A regional wine or market cheese carries centuries of tradition
+  the same way a cathedral does.
 - The goal is to find like-minded travellers and start conversations — posts should feel
   like an open invitation to connect, not a broadcast
 - Never generic influencer language
@@ -69,10 +80,14 @@ Before processing any content, consider which format serves it best:
   good for growing the account. Even a simple slideshow of 5–6 photos with ambient music
   can work well as a Reel.
 
-- **Story** — ephemeral 24-hour content, not permanent on the profile. Use for: behind-the-
-  scenes moments, quick "just arrived" updates, polls ("which route?", "can you guess this
-  castle?"), Q&A, or to tease an upcoming post. Stories are great for staying present
-  between posts without committing to a full post. They don't need to be polished.
+- **Story** — ephemeral 24-hour content, not permanent on the profile. Stories are the
+  behind-the-scenes layer that accompanies feed posts — when a post goes up about a castle,
+  the Story that day might be Denis arriving, a detail he noticed, or a quick thought about
+  what he found there. This creates a narrative link between formats and puts the person
+  (Denis) front and centre. Use for: arrival moments, personal reactions, quick "just got
+  here" updates, polls ("which route?", "can you guess this castle?"), Q&A, or post teasers.
+  Stories don't need to be polished — that's their value. Old story highlights (Wales, France,
+  Devon, Ireland) remain as-is for now; new highlights will be built from future trips.
 
 ## Workflow
 
