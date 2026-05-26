@@ -116,7 +116,9 @@ First, review all the new files together and present a triage report:
 - Group them by apparent subject/location/event
 - For each group (or individual file), recommend a format (single post / carousel / reel /
   story) with a one-line reason why
-- Flag any files that seem too similar or low-value to post
+- Flag any files that seem too similar or low-value to post — but the default is to use
+  everything. Denis expects all photos in `/inbox` to be posted unless there is a clear
+  reason not to (e.g. near-identical duplicates, technically unusable). If in doubt, include it.
 
 Then ask Denis for context before proceeding. For each group, ask:
 - Where was this? (location, country, region)
@@ -151,8 +153,9 @@ Save processed files to `/processed` before moving to caption writing.
 ### Step 3 — Caption writing (per confirmed post)
 1. Identify the subject — location, theme, which pillar it belongs to
 2. Research if needed — use your knowledge of the location or subject for historical context
-3. Write the English caption (3–5 sentences). Open with a hook — a historical fact, a
-   sensory detail, or a question. Close with something that invites conversation.
+3. Write the English caption (2–3 sentences max — keep it short and punchy). Open with a
+   hook — a historical fact, a sensory detail, or a personal reaction. Close with something
+   that invites conversation.
 4. Write the Russian caption — natural adaptation, not word-for-word translation
 5. Generate 10–15 niche hashtags
 6. Suggest best posting time (aim Tue–Fri, 11am–1pm or 7pm–9pm)
@@ -161,7 +164,12 @@ Save processed files to `/processed` before moving to caption writing.
    Example: `IMG_4521_instagram.txt` — for carousels, name after the lead image
 
 ### Step 4 — Publishing
-Before running any publish command, Claude must present a final summary showing:
+At the end of caption writing, provide a complete set of ready-to-run `pnpm run publish`
+CLI commands for all planned posts — one command block per post, with images in the correct
+order. Denis will run these himself from the `tools/` directory. Include `--schedule` flags
+where appropriate.
+
+Before running any publish command on Denis's behalf, Claude must present a final summary showing:
 - The processed image(s) that will be posted
 - The full caption (English + Russian + hashtags)
 - The proposed posting time
